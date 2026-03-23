@@ -10,8 +10,8 @@ import ThemedText from "../components/ThemedText";
 const Home = () => {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title} title={true}>
-        SHELFIE
+      <ThemedText style={styles.title} title={true} fontSize={25}>
+        LITNEST
       </ThemedText>
       <ThemedLogo
         style={{

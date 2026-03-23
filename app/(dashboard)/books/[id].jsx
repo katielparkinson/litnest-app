@@ -43,9 +43,9 @@ const BookDetails = () => {
         <ThemedText style={styles.title}>{book.title}</ThemedText>
         <ThemedText>Written by {book.author}</ThemedText>
         <Spacer />
-        <ThemedText title={true}>Book description:</ThemedText>
+        <ThemedText title={true}>Book notes:</ThemedText>
         <Spacer height={10} />
-        <ThemedText>{book.description}</ThemedText>
+        <ThemedText>{book.notes}</ThemedText>
       </ThemedCard>
       <ThemedButton style={styles.delete} onPress={handleDelete}>
         <Text style={{ color: "#fff", textAlign: "center" }}>Delete Book</Text>

@@ -48,7 +48,8 @@ export function BooksProvider({ children }) {
         databaseId: DATABASE_ID,
         tableId: COLLECTION_ID,
         rowId: ID.unique(),
-        data: { userId: user.$id, ...data },
+        data: { userId: user.$id, status: "tbr", ...data },
+        //status: "tbr" sets default when book is created to tbr
         permissions: [
           Permission.read(Role.user(user.$id)),
           Permission.update(Role.user(user.$id)),

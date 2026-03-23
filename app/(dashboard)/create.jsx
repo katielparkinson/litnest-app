@@ -17,20 +17,25 @@ import ThemedButton from "../../components/ThemedButton";
 const Create = () => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
-  const [description, setDescription] = useState("");
+  //const [status, setStatus] = useState("")
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { createBook } = useBooks();
   const router = useRouter();
 
   const handleSubmit = async () => {
-    if (!title.trim() || !author.trim() || !description.trim()) return;
+    if (!title.trim() || !author.trim()) return;
     setLoading(true);
-    await createBook({ title, author, description });
+    await createBook({
+      title,
+      author,
+      notes: notes.trim() || undefined,
+    });
     //reset fields
     setTitle("");
     setAuthor("");
-    setDescription("");
+    setNotes("");
 
     //redirect user
     router.replace("/books");
@@ -63,9 +68,9 @@ const Create = () => {
         <Spacer />
         <ThemedTextInput
           style={styles.multiline}
-          placeholder="Book Description"
-          value={description}
-          onChangeText={setDescription}
+          placeholder="Book Notes"
+          value={notes}
+          onChangeText={setNotes}
           multiline={true}
         />
         <Spacer />
