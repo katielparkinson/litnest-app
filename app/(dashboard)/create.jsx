@@ -13,16 +13,24 @@ import ThemedText from "../../components/ThemedText";
 import ThemedTextInput from "../../components/ThemedTextInput";
 import Spacer from "../../components/Spacer";
 import ThemedButton from "../../components/ThemedButton";
+import ThemedDropdown from "../../components/ThemedDropdown";
 
 const Create = () => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
-  //const [status, setStatus] = useState("")
+  const [status, setStatus] = useState(null);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { createBook } = useBooks();
   const router = useRouter();
+
+  const statusData = [
+    { label: "To Be Read (TBR)", value: "tbr" },
+    { label: "In Progress", value: "in-progress" },
+    { label: "Completed", value: "completed" },
+    { label: "Did Not Finish (DNF)", value: "dnf" },
+  ];
 
   const handleSubmit = async () => {
     if (!title.trim() || !author.trim()) return;
@@ -30,11 +38,13 @@ const Create = () => {
     await createBook({
       title,
       author,
+      status: status || "tbr",
       notes: notes.trim() || undefined,
     });
     //reset fields
     setTitle("");
     setAuthor("");
+    setStatus(null);
     setNotes("");
 
     //redirect user
@@ -64,6 +74,14 @@ const Create = () => {
           placeholder="Author"
           value={author}
           onChangeText={setAuthor}
+        />
+        <Spacer />
+        <ThemedDropdown
+          label="Status"
+          data={statusData}
+          value={status}
+          onChange={(value) => setStatus(value)}
+          placeholder="Select Status..."
         />
         <Spacer />
         <ThemedTextInput
