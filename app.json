@@ -1,8 +1,8 @@
 {
   "expo": {
-    "scheme": "shelfie-app",
-    "name": "shelfie-app",
-    "slug": "shelfie-app",
+    "scheme": "litnest-app",
+    "name": "LitNest",
+    "slug": "litnest-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
