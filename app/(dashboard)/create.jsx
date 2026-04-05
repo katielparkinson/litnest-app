@@ -1,5 +1,7 @@
 import {
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TouchableWithoutFeedback,
   Keyboard,
@@ -14,6 +16,7 @@ import ThemedTextInput from "../../components/ThemedTextInput";
 import Spacer from "../../components/Spacer";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedDropdown from "../../components/ThemedDropdown";
+import ThemedScrollView from "../../components/ThemedScrollView";
 
 const Create = () => {
   const [title, setTitle] = useState("");
@@ -56,48 +59,55 @@ const Create = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ThemedView style={styles.container}>
-        <ThemedText title={true} style={styles.heading}>
-          Add a New Book
-        </ThemedText>
-        <Spacer />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <ThemedScrollView contentContainerStyle={styles.scrollContainer}>
+          <ThemedView style={styles.content}>
+            <ThemedText title={true} style={styles.heading}>
+              Add a New Book
+            </ThemedText>
+            <Spacer />
 
-        <ThemedTextInput
-          style={styles.input}
-          placeholder="Book Title"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <Spacer />
-        <ThemedTextInput
-          style={styles.input}
-          placeholder="Author"
-          value={author}
-          onChangeText={setAuthor}
-        />
-        <Spacer />
-        <ThemedDropdown
-          label="Status"
-          data={statusData}
-          value={status}
-          onChange={(value) => setStatus(value)}
-          placeholder="Select Status..."
-        />
-        <Spacer />
-        <ThemedTextInput
-          style={styles.multiline}
-          placeholder="Book Notes"
-          value={notes}
-          onChangeText={setNotes}
-          multiline={true}
-        />
-        <Spacer />
-        <ThemedButton onPress={handleSubmit} disabled={loading}>
-          <Text style={{ color: "#fff" }}>
-            {loading ? "Saving..." : "Create Book"}
-          </Text>
-        </ThemedButton>
-      </ThemedView>
+            <ThemedTextInput
+              style={styles.input}
+              placeholder="Book Title"
+              value={title}
+              onChangeText={setTitle}
+            />
+            <Spacer />
+            <ThemedTextInput
+              style={styles.input}
+              placeholder="Author"
+              value={author}
+              onChangeText={setAuthor}
+            />
+            <Spacer />
+            <ThemedDropdown
+              label="Status"
+              data={statusData}
+              value={status}
+              onChange={(value) => setStatus(value)}
+              placeholder="Select Status..."
+            />
+            <Spacer />
+            <ThemedTextInput
+              style={styles.multiline}
+              placeholder="Book Notes"
+              value={notes}
+              onChangeText={setNotes}
+              multiline={true}
+            />
+            <Spacer />
+            <ThemedButton onPress={handleSubmit} disabled={loading}>
+              <Text style={{ color: "#fff" }}>
+                {loading ? "Saving..." : "Create Book"}
+              </Text>
+            </ThemedButton>
+          </ThemedView>
+        </ThemedScrollView>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
@@ -106,8 +116,15 @@ export default Create;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  content: {
+    flex: 1,
     alignItems: "center",
+    paddingVertical: 20,
+    justifyContent: "center",
   },
   heading: {
     textAlign: "center",
