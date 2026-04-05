@@ -1,4 +1,4 @@
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useBooks } from "../../../hooks/useBooks";
@@ -16,10 +16,36 @@ const BookDetails = () => {
   const { id } = useLocalSearchParams();
   const { fetchBookById, deleteBook } = useBooks();
   const router = useRouter();
-  const handleDelete = async () => {
-    await deleteBook(id);
-    setBook(null);
-    router.replace("/books");
+
+  //alert to confirm book deletion
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Book",
+      "Are you sure? This action is permanent and cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteBook(id);
+              setBook(null);
+              router.replace("/books");
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Failed to delete the book. Please try again.",
+              );
+              console.error("Delete error:", error);
+            }
+          },
+        },
+      ],
+    );
   };
 
   useEffect(() => {
@@ -42,7 +68,9 @@ const BookDetails = () => {
       <ThemedCard style={styles.card}>
         <ThemedText style={styles.title}>{book.title}</ThemedText>
         <ThemedText>Written by {book.author}</ThemedText>
-        <Spacer />
+        <Spacer height={10} />
+        <ThemedText>Status: {book.status}</ThemedText>
+        <Spacer height={10} />
         <ThemedText title={true}>Book notes:</ThemedText>
         <Spacer height={10} />
         <ThemedText>{book.notes}</ThemedText>
