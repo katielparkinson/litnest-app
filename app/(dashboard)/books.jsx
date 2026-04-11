@@ -8,18 +8,34 @@ import ThemedText from "../../components/ThemedText";
 import Spacer from "../../components/Spacer";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedCard from "../../components/ThemedCard";
+import ThemedDropdown from "../../components/ThemedDropdown";
 
 const Books = () => {
   const { books } = useBooks();
   const router = useRouter();
+
+  const statusData = [
+    { label: "All", value: "all" },
+    { label: "To Be Read (TBR)", value: "tbr" },
+    { label: "In Progress", value: "in-progress" },
+    { label: "Completed", value: "completed" },
+    { label: "Did Not Finish (DNF)", value: "dnf" },
+  ];
+
   return (
     <ThemedView style={styles.container} safe={true}>
       <Spacer />
       <ThemedText title={true} style={styles.heading}>
         Your Reading List
       </ThemedText>
-
-      <Spacer />
+      <Spacer height={15} />
+      <ThemedDropdown
+        label="Filter by Status"
+        data={statusData}
+        //value={status}
+        //onChange={(value) => setStatus(value)}
+        placeholder="Select Status..."
+      />
       <FlatList
         data={books}
         keyExtractor={(item) => item.$id}
@@ -28,7 +44,7 @@ const Books = () => {
           <Pressable onPress={() => router.push(`/books/${item.$id}`)}>
             <ThemedCard style={styles.card}>
               <ThemedText style={styles.title}>{item.title}</ThemedText>
-              <ThemedText>Written by {item.autor}</ThemedText>
+              <ThemedText>Author: {item.author}</ThemedText>
             </ThemedCard>
           </Pressable>
         )}
@@ -47,7 +63,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   },
   list: {

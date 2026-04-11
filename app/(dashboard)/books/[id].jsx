@@ -67,9 +67,13 @@ const BookDetails = () => {
     <ThemedView safe={true} style={styles.container}>
       <ThemedCard style={styles.card}>
         <ThemedText style={styles.title}>{book.title}</ThemedText>
-        <ThemedText>Written by {book.author}</ThemedText>
+        <ThemedText title={true}>
+          Author: <ThemedText>{book.author}</ThemedText>
+        </ThemedText>
         <Spacer height={10} />
-        <ThemedText>Status: {book.status}</ThemedText>
+        <ThemedText title={true}>
+          Status: <ThemedText>{book.status}</ThemedText>
+        </ThemedText>
         <Spacer height={10} />
         <ThemedText title={true}>Book notes:</ThemedText>
         <Spacer height={10} />
