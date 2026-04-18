@@ -1,15 +1,15 @@
 import { Alert, StyleSheet, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import Spacer from "../../../components/Spacer";
-import ThemedButton from "../../../components/ThemedButton";
-import ThemedCard from "../../../components/ThemedCard";
-import ThemedLoader from "../../../components/ThemedLoader";
-import ThemedText from "../../../components/ThemedText";
-import ThemedView from "../../../components/ThemedView";
-import { Colors } from "../../../constants/Colors";
-import { useBooks } from "../../../hooks/useBooks";
-import type { Book } from "../../../types/app";
+import Spacer from "../../../../components/Spacer";
+import ThemedButton from "../../../../components/ThemedButton";
+import ThemedCard from "../../../../components/ThemedCard";
+import ThemedLoader from "../../../../components/ThemedLoader";
+import ThemedText from "../../../../components/ThemedText";
+import ThemedView from "../../../../components/ThemedView";
+import { Colors } from "../../../../constants/Colors";
+import { useBooks } from "../../../../hooks/useBooks";
+import type { Book } from "../../../../types/app";
 
 const BookDetails = () => {
   const [book, setBook] = useState<Book | null>(null);
@@ -43,7 +43,7 @@ const BookDetails = () => {
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -56,7 +56,7 @@ const BookDetails = () => {
     }
 
     loadBook();
-  }, [bookId, fetchBookById]);
+  }, [bookId]);
 
   if (!book) {
     return (
@@ -80,10 +80,16 @@ const BookDetails = () => {
         <Spacer height={10} />
         <ThemedText title>Book notes:</ThemedText>
         <Spacer height={10} />
-        <ThemedText>{book.notes}</ThemedText>
+        <ThemedText>{book.notes || "No notes yet."}</ThemedText>
       </ThemedCard>
+      <ThemedButton
+        style={styles.edit}
+        onPress={() => bookId && router.push(`/books/${bookId}/edit`)}
+      >
+        <Text style={styles.buttonText}>Edit Book</Text>
+      </ThemedButton>
       <ThemedButton style={styles.delete} onPress={handleDelete}>
-        <Text style={{ color: "#fff", textAlign: "center" }}>Delete Book</Text>
+        <Text style={styles.buttonText}>Delete Book</Text>
       </ThemedButton>
     </ThemedView>
   );
@@ -103,10 +109,18 @@ const styles = StyleSheet.create({
   card: {
     margin: 20,
   },
-  delete: {
+  edit: {
     marginTop: 40,
+    width: 200,
+    alignSelf: "center",
+  },
+  delete: {
     backgroundColor: Colors.warning,
     width: 200,
     alignSelf: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
   },
 });

@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+.codex
+APP_COMPLETION_PLAN.md
+server/.env
+server/data/

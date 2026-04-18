@@ -1,11 +1,14 @@
 import { createContext, useEffect, type PropsWithChildren, useState } from "react";
-import { ID, Permission, Query, Role } from "react-native-appwrite";
-import { client, databases } from "../lib/appwrite";
+import {
+  createBook as createBookRequest,
+  deleteBook as deleteBookRequest,
+  fetchBookById as fetchBookByIdRequest,
+  fetchBooks as fetchBooksRequest,
+  getStoredAuthToken,
+  updateBook as updateBookRequest,
+} from "../lib/api";
 import { useUser } from "../hooks/useUser";
 import type { Book, BookInput, BooksContextValue } from "../types/app";
-
-const DATABASE_ID = "699fd974001f84313604";
-const COLLECTION_ID = "699fd9ec0012db8d0fc2";
 
 export const BooksContext = createContext<BooksContextValue | undefined>(
   undefined,
@@ -19,15 +22,18 @@ export function BooksProvider({ children }: PropsWithChildren) {
   const { user } = useUser();
 
   async function fetchBooks() {
-    if (!user?.$id) return;
+    if (!user?.id) return;
 
     try {
-      const response = await databases.listRows<Book>({
-        databaseId: DATABASE_ID,
-        tableId: COLLECTION_ID,
-        queries: [Query.equal("userId", user.$id), Query.orderAsc("$createdAt")],
-      });
-      setBooks(response.rows);
+      const token = await getStoredAuthToken();
+
+      if (!token) {
+        setBooks([]);
+        return;
+      }
+
+      const response = await fetchBooksRequest(token);
+      setBooks(response);
     } catch (error) {
       console.error("fetchBooks error:", getErrorMessage(error));
     }
@@ -35,11 +41,13 @@ export function BooksProvider({ children }: PropsWithChildren) {
 
   async function fetchBookById(id: string) {
     try {
-      const response = await databases.getRow<Book>({
-        databaseId: DATABASE_ID,
-        tableId: COLLECTION_ID,
-        rowId: id,
-      });
+      const token = await getStoredAuthToken();
+
+      if (!token) {
+        return;
+      }
+
+      const response = await fetchBookByIdRequest(token, id);
       return response;
     } catch (error) {
       console.error(getErrorMessage(error));
@@ -47,71 +55,75 @@ export function BooksProvider({ children }: PropsWithChildren) {
   }
 
   async function createBook(data: BookInput) {
-    if (!user?.$id) return;
+    if (!user?.id) return;
 
     try {
-      await databases.createRow<Book>({
-        databaseId: DATABASE_ID,
-        tableId: COLLECTION_ID,
-        rowId: ID.unique(),
-        data: { userId: user.$id, status: "tbr", ...data },
-        permissions: [
-          Permission.read(Role.user(user.$id)),
-          Permission.update(Role.user(user.$id)),
-          Permission.delete(Role.user(user.$id)),
-        ],
-      });
+      const token = await getStoredAuthToken();
+
+      if (!token) {
+        throw new Error("You must be logged in to create a book");
+      }
+
+      const response = await createBookRequest(token, data);
+      setBooks((prevBooks) => [...prevBooks, response]);
     } catch (error) {
       console.error("createBook error:", getErrorMessage(error));
+      throw error;
+    }
+  }
+
+  async function updateBook(id: string, data: BookInput) {
+    try {
+      const token = await getStoredAuthToken();
+
+      if (!token) {
+        throw new Error("You must be logged in to update a book");
+      }
+
+      const response = await updateBookRequest(token, id, data);
+      setBooks((prevBooks) =>
+        prevBooks.map((book) => (book.id === response.id ? response : book))
+      );
+    } catch (error) {
+      console.error("updateBook error:", getErrorMessage(error));
+      throw error;
     }
   }
 
   async function deleteBook(id: string) {
     try {
-      await databases.deleteRow({
-        databaseId: DATABASE_ID,
-        tableId: COLLECTION_ID,
-        rowId: id,
-      });
+      const token = await getStoredAuthToken();
+
+      if (!token) {
+        throw new Error("You must be logged in to delete a book");
+      }
+
+      await deleteBookRequest(token, id);
+      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
     } catch (error) {
       console.error(getErrorMessage(error));
+      throw error;
     }
   }
 
   useEffect(() => {
-    let unsubscribe: VoidFunction | undefined;
-    const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
-
-    if (user?.$id) {
+    if (user?.id) {
       fetchBooks();
-      unsubscribe = client.subscribe(channel, (response) => {
-        const payload = response.payload as Book;
-        const event = response.events[0];
-
-        if (payload.userId !== user.$id) return;
-
-        if (event?.includes("create")) {
-          setBooks((prevBooks) => [...prevBooks, payload]);
-        }
-
-        if (event?.includes("delete")) {
-          setBooks((prevBooks) =>
-            prevBooks.filter((book) => book.$id !== payload.$id),
-          );
-        }
-      });
     } else {
       setBooks([]);
     }
-
-    return () => {
-      unsubscribe?.();
-    };
-  }, [user?.$id]);
+  }, [user?.id]);
 
   return (
     <BooksContext.Provider
-      value={{ books, fetchBooks, fetchBookById, createBook, deleteBook }}
+      value={{
+        books,
+        fetchBooks,
+        fetchBookById,
+        createBook,
+        updateBook,
+        deleteBook,
+      }}
     >
       {children}
     </BooksContext.Provider>

@@ -1,0 +1,28 @@
+services:
+  api:
+    image: ${LITNEST_API_IMAGE}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - litnest_api_data:/app/data
+    networks:
+      - app
+      - ingress
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=infra_ingress
+      - traefik.http.routers.litnest-api.rule=Host(`${LITNEST_API_DOMAIN}`)
+      - traefik.http.routers.litnest-api.entrypoints=websecure
+      - traefik.http.routers.litnest-api.tls.certresolver=letsencrypt
+      - traefik.http.services.litnest-api.loadbalancer.server.port=${LITNEST_API_PORT}
+
+volumes:
+  litnest_api_data:
+
+networks:
+  ingress:
+    external: true
+    name: infra_ingress
+  app:
+    driver: bridge

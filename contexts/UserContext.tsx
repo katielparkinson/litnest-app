@@ -1,6 +1,13 @@
 import { createContext, useEffect, type PropsWithChildren, useState } from "react";
-import { ID } from "react-native-appwrite";
-import { account } from "../lib/appwrite";
+import {
+  clearStoredAuthToken,
+  fetchCurrentUser,
+  getStoredAuthToken,
+  loginWithPassword,
+  logoutFromApi,
+  registerWithPassword,
+  setStoredAuthToken,
+} from "../lib/api";
 import type { AppUser, UserContextValue } from "../types/app";
 
 export const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -10,16 +17,15 @@ const getErrorMessage = (error: unknown) =>
 
 export function UserProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AppUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   async function login(email: string, password: string) {
     try {
-      await account.createEmailPasswordSession({
-        email,
-        password,
-      });
-      const response = await account.get();
-      setUser(response);
+      const response = await loginWithPassword(email, password);
+      await setStoredAuthToken(response.token);
+      setToken(response.token);
+      setUser(response.user);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -27,29 +33,41 @@ export function UserProvider({ children }: PropsWithChildren) {
 
   async function register(email: string, password: string) {
     try {
-      await account.create({
-        userId: ID.unique(),
-        email,
-        password,
-      });
-      await login(email, password);
+      const response = await registerWithPassword(email, password);
+      await setStoredAuthToken(response.token);
+      setToken(response.token);
+      setUser(response.user);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
   }
 
   async function logout() {
-    await account.deleteSession({
-      sessionId: "current",
-    });
-    setUser(null);
+    try {
+      await logoutFromApi(token);
+    } finally {
+      await clearStoredAuthToken();
+      setToken(null);
+      setUser(null);
+    }
   }
 
   async function getInitialUserValue() {
+    const storedToken = await getStoredAuthToken();
+
+    if (!storedToken) {
+      setUser(null);
+      setAuthChecked(true);
+      return;
+    }
+
     try {
-      const response = await account.get();
+      const response = await fetchCurrentUser(storedToken);
+      setToken(storedToken);
       setUser(response);
     } catch {
+      await clearStoredAuthToken();
+      setToken(null);
       setUser(null);
     } finally {
       setAuthChecked(true);

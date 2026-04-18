@@ -1,5 +1,6 @@
 import { FlatList, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import Spacer from "../../components/Spacer";
 import ThemedCard from "../../components/ThemedCard";
 import ThemedDropdown from "../../components/ThemedDropdown";
@@ -7,7 +8,7 @@ import ThemedText from "../../components/ThemedText";
 import ThemedView from "../../components/ThemedView";
 import { Colors } from "../../constants/Colors";
 import { useBooks } from "../../hooks/useBooks";
-import type { Book, DropdownOption } from "../../types/app";
+import type { Book, BookStatus, DropdownOption } from "../../types/app";
 
 const statusData: DropdownOption[] = [
   { label: "All", value: "all" },
@@ -20,6 +21,15 @@ const statusData: DropdownOption[] = [
 const Books = () => {
   const { books } = useBooks();
   const router = useRouter();
+  const [selectedStatus, setSelectedStatus] = useState<"all" | BookStatus>("all");
+
+  const filteredBooks = useMemo(() => {
+    if (selectedStatus === "all") {
+      return books;
+    }
+
+    return books.filter((book) => book.status === selectedStatus);
+  }, [books, selectedStatus]);
 
   return (
     <ThemedView style={styles.container} safe>
@@ -31,14 +41,21 @@ const Books = () => {
       <ThemedDropdown
         label="Filter by Status"
         data={statusData}
+        value={selectedStatus}
+        onChange={(value) => setSelectedStatus(value as "all" | BookStatus)}
         placeholder="Select Status..."
       />
       <FlatList<Book>
-        data={books}
-        keyExtractor={(item) => item.$id}
+        data={filteredBooks}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <ThemedText style={styles.emptyState}>
+            No books match this filter yet.
+          </ThemedText>
+        }
         renderItem={({ item }) => (
-          <Pressable onPress={() => router.push(`/books/${item.$id}`)}>
+          <Pressable onPress={() => router.push(`/books/${item.id}`)}>
             <ThemedCard style={styles.card}>
               <ThemedText style={styles.title}>{item.title}</ThemedText>
               <ThemedText>Author: {item.author}</ThemedText>
@@ -64,6 +81,8 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: 40,
+    width: "100%",
+    paddingBottom: 40,
   },
   card: {
     width: "90%",
@@ -78,5 +97,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  emptyState: {
+    textAlign: "center",
+    marginTop: 40,
+    paddingHorizontal: 24,
   },
 });
